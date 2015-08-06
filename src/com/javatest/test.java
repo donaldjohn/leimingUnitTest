@@ -1,5 +1,16 @@
 package com.javatest;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 
 import net.sourceforge.pinyin4j.PinyinHelper;
@@ -11,8 +22,57 @@ import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombi
 
 import org.junit.Test;
 
+/**
+ * java方法的测试类型
+ * */
 public class test {
 
+	@Test
+	 //初始化数据库中的数据
+    public void initData() {
+		try {
+			initDataNow("teacher");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
+	
+	
+	public void initDataNow(String fileName) throws IOException{
+		 String sql = null;  
+    	 DBHelper db1 = null;  
+    	 ResultSet ret = null;
+    	 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    	 //读取本地文件的数据
+    	 File file = new File("E:\\学习资料\\个人\\周伟app\\Leiming\\assets\\class\\"+fileName+".txt");
+    	 BufferedReader read;
+		try {
+			//读取文件中的数据
+			read = new BufferedReader(new InputStreamReader(new FileInputStream(file),"GB2312"));
+			String result = null;
+			while ((result = read.readLine()) != null) {
+				String[] split = result.split("&&");
+				if(split.length > 1){
+					sql = "insert into title(title,content,type,operateTime) values('"+split[0]+"','"+split[1]+"','"+fileName+"','"+sdf.format(new Date())+"')";//SQL语句  
+				}else{
+					sql = "insert into title(title,content,type,operateTime) values('"+split[0]+"','','"+fileName+"','"+sdf.format(new Date())+"')";//SQL语句  
+				}
+				db1 = new DBHelper(sql);//创建DBHelper对象  
+				try {  
+		        	 db1.pst.execute(sql);
+		         } catch (SQLException e) {  
+		             e.printStackTrace();  
+		         } 
+			}
+			db1.close();//关闭连接  
+	         
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		}
+	}
+	
 	@Test
 	public void test1(){
 		String oldName = "张春生d";
@@ -72,6 +132,6 @@ public class test {
         }  
         return spellMap;  
     } 
-  
+    
     
 }
